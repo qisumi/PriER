@@ -1,0 +1,37 @@
+# Data
+data_root: data            # raw benchmark archives are downloaded here
+work: work                 # all intermediate and output artifacts
+datasets: [abt_buy, amazon_google, restaurant, dblp_acm, musicbrainz_20k, affiliations]
+transfer_dataset: walmart_amazon   # prepared after the primary six (overlap filter)
+
+# Models
+encoder_path: models/all-MiniLM-L6-v2      # sentence-transformers snapshot
+reviewer_path: models/Qwen2.5-1.5B-Instruct
+device: cuda:0
+reviewer_max_input_tokens: 2048
+
+# Blocking and anchor prior (shared by every method)
+blocking: {top_k: 10, min_cosine: 0.5, max_size: 64}
+cross_block_fit_pairs: 50000
+
+# Identity prior (residual logistic regression around the anchor)
+fit_seeds: [20261012, 20261013, 20261014]
+run_seeds: [17, 29, 43]        # paired with the fit seeds, in order
+positive_weight: 2.0
+l2: 0.0001
+entity_train_fraction: 0.8
+
+# Review channel
+calibration_pairs: 768
+calibration_seed: 17
+
+# Budgets (prompt tokens per record)
+rates: [0, 8, 16, 32, 64, 256]
+
+# Methods: prier (+ prier_drop_<group> ablations) and the baselines
+methods: [prier, risk, ut, booster, alper, acc, kwikbucks, kwikbucks_budget, pivot]
+feature_groups: [fields, identifiers, anchor_source, embedding_interactions, institution]
+
+# Task-aware readout is fitted for every dataset but only applied where the
+# schema fragments (institution names); others decode with lambda = 1.
+readout_datasets: [affiliations]
